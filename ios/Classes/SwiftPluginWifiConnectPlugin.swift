@@ -23,8 +23,8 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
 
         case "connect":
           let args = try GetArgs(arguments: call.arguments)
-          let hotspotConfig = NEHotspotConfiguration.init(ssid: args["ssid"] as! String)
-          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool);
+          let hotspotConfig = NEHotspotConfiguration(ssid: args["ssid"] as! String)
+          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool)
           connect(hotspotConfig: hotspotConfig, result: result)
           return
 
@@ -34,15 +34,13 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
             return
           }
           let args = try GetArgs(arguments: call.arguments)
-          let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: args["ssid"] as! String)
-          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool);
-          connect(hotspotConfig: hotspotConfig, result: result)
+          connectByPrefix(ssidPrefix: args["ssid"] as! String, result: result)
           return
 
         case "secureConnect":
           let args = try GetArgs(arguments: call.arguments)
-          let hotspotConfig = NEHotspotConfiguration.init(ssid: args["ssid"] as! String, passphrase: args["password"] as! String, isWEP: args["isWep"] as! Bool)
-          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool);
+          let hotspotConfig = NEHotspotConfiguration(ssid: args["ssid"] as! String, passphrase: args["password"] as! String, isWEP: args["isWep"] as! Bool)
+          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool)
           connect(hotspotConfig: hotspotConfig, result: result)
           return
 
@@ -52,8 +50,8 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
             return
           }
           let args = try GetArgs(arguments: call.arguments)
-          let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: args["ssid"] as! String, passphrase: args["password"] as! String, isWEP: args["isWep"] as! Bool)
-          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool);
+          let hotspotConfig = NEHotspotConfiguration(ssidPrefix: args["ssid"] as! String, passphrase: args["password"] as! String, isWEP: args["isWep"] as! Bool)
+          hotspotConfig.joinOnce = !(args["saveNetwork"] as! Bool)
           connect(hotspotConfig: hotspotConfig, result: result)
           return
 
@@ -70,7 +68,7 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
     } catch {
         result(
           FlutterError( code: "unknownError", 
-            message: "Unkown iOS error",
+            message: "Unknown iOS error",
             details: error))
         return
     }
@@ -80,7 +78,7 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
     case MissingArgs
   }
 
-  func GetArgs(arguments: Any?) throws -> [String : Any]{
+  func GetArgs(arguments: Any?) throws -> [String : Any] {
     guard let args = arguments as? [String : Any] else {
       throw ArgsError.MissingArgs
     }
@@ -117,7 +115,40 @@ public class SwiftPluginWifiConnectPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  @available(iOS 11, *)   
+  @available(iOS 13.0, *)
+  private func connectByPrefix(ssidPrefix: String, result: @escaping FlutterResult) -> Void {
+    if let currentSsid = self.getSSID(), currentSsid.hasPrefix(ssidPrefix) {
+      let hotspotConfig = NEHotspotConfiguration(ssid: currentSsid)
+      hotspotConfig.joinOnce = true
+      connect(hotspotConfig: hotspotConfig, result: result)
+    } else {
+      let hotspotConfig = NEHotspotConfiguration(ssidPrefix: ssidPrefix)
+      hotspotConfig.joinOnce = true
+      NEHotspotConfigurationManager.shared.apply(hotspotConfig) { (error) in
+        if let error = error as NSError? {
+          switch(error.code) {
+          case NEHotspotConfigurationError.alreadyAssociated.rawValue:
+              result(true)
+              break
+          case NEHotspotConfigurationError.userDenied.rawValue:
+              result(false)
+              break
+          default:
+              result(false)
+              break
+          }
+          return
+        }
+        if let currentSsid = self.getSSID() {
+          result(currentSsid.hasPrefix(ssidPrefix))
+        } else {
+          result(false)
+        }
+      }
+    }
+  }
+
+  @available(iOS 11, *)
   private func disconnect() -> Bool {
     let ssid: String? = getSSID()
     if(ssid == nil){
