@@ -14,17 +14,15 @@ buildscript {
     }
 }
 
-plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
-}
-
 rootProject.allprojects {
     repositories {
         google()
         jcenter()
     }
 }
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 35
@@ -44,7 +42,8 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 35 
+        targetSdkVersion 35
+
     }
 }
 
