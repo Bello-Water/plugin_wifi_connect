@@ -26,6 +26,8 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 34 // Ensure this is specified
+    
+    namespace 'dev.fluttercommunity.plus.network_info'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
