@@ -27,7 +27,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 34 // Ensure this is specified
     
-    namespace 'dev.fluttercommunity.plus.network_info'
+    namespace 'com.peakysoftware.plus_wifi_connect'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
