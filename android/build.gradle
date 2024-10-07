@@ -23,9 +23,11 @@ rootProject.allprojects {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services' // Add this if using Google services
+apply plugin: 'com.google.firebase.crashlytics' // Add this if using Firebase Crashlytics
 
 android {
-    compileSdk 34
+    compileSdkVersion 34 // Ensure this is specified
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -45,6 +47,7 @@ android {
     }
 }
 
-/*dependencies {
+dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-}*/
+    // Add other dependencies if needed
+}
